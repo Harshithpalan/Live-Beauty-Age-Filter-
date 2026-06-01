@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUMIÈRE — Live Beauty Studio</title>
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Lexend:wght@200;300;400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream:    #faf6f0;
+  --cream2:   #f3ece0;
+  --rose:     #c8927a;
+  --rose2:    #e8b4a0;
+  --rose3:    #f5d4c8;
+  --gold:     #c4a882;
+  --gold2:    #dfc4a0;
+  --ink:      #1a1410;
+  --ink2:     #2e2820;
+  --muted:    #8a7a6e;
+  --border:   #e0d4c4;
+  --border2:  #d0c0a8;
+
+  --filter-glow: rgba(200,146,122,0.2);
+}
+
+html, body { height: 100%; overflow: hidden; background: var(--cream); }
+
+body {
+  font-family: 'Lexend', sans-serif;
+  font-weight: 300;
+  color: var(--ink);
+  display: grid;
+  grid-template-rows: 64px 1fr 52px;
+  height: 100vh;
+}
+
+/* ── Subtle linen texture ─────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(180,160,140,0.03) 3px,
+      rgba(180,160,140,0.03) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 3px,
+      rgba(180,160,140,0.02) 3px,
+      rgba(180,160,140,0.02) 4px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ───────────────────────────────────── */
+header {
+  position: relative; z-index: 50;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 2rem;
+  background: var(--ink);
+  border-bottom: 1px solid rgba(196,168,130,0.3);
+}
+
+.brand {
+  display: flex; flex-direction: column; align-items: flex-start;
+}
+.brand-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 300;
+  letter-spacing: 0.35em;
+  color: var(--gold2);
+  line-height: 1;
+  font-style: italic;
+}
+.brand-sub {
+  font-size: 0.42rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: rgba(196,168,130,0.45);
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+.header-center {
+  font-size: 0.45rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(196,168,130,0.3);
+  text-align: center;
+}
+
+.header-right {
+  display: flex; justify-content: flex-end; align-items: center; gap: 12px;
+}
+
+.status-gem {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 0.44rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(196,168,130,0.35);
+  border: 1px solid rgba(196,168,130,0.15);
+  padding: 5px 14px;
+  transition: all 0.5s;
+}
+.status-gem .pip {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(196,168,130,0.25);
+  transition: all 0.5s;
+}
+.status-gem.live { color: var(--rose2); border-color: rgba(200,146,122,0.3); }
+.status-gem.live .pip {
+  background: var(--rose2);
+  box-shadow: 0 0 8px var(--rose);
+  animation: gem-pulse 2s ease-in-out infinite;
+}
+@keyframes gem-pulse { 0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)} }
+
+/* ── MAIN LAYOUT ──────────────────────────────── */
+.app {
+  position: relative; z-index: 1;
+  display: grid;
+  grid-template-columns: 280px 1fr 260px;
+  overflow: hidden;
+}
+
+/* ── LEFT PANEL ───────────────────────────────── */
+.left-panel {
+  background: var(--cream2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow-y: auto; overflow-x: hidden;
+}
+.left-panel::-webkit-scrollbar { width: 3px; }
+.left-panel::-webkit-scrollbar-thumb { background: var(--border2); }
+
+/* Section blocks */
+.lsec {
+  padding: 1.1rem 1.3rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.lsec-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  color: var(--ink2);
+  margin-bottom: 0.85rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.lsec-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border2), transparent);
+}
+
+/* Preset cards */
+.preset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.preset-card {
+  padding: 10px 10px 8px;
+  border: 1px solid var(--border);
+  background: var(--cream);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.preset-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--rose3) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.preset-card:hover::before { opacity: 1; }
+.preset-card:hover { border-color: var(--rose); }
+.preset-card.active {
+  border-color: var(--rose);
+  background: linear-gradient(135deg, var(--rose3) 0%, var(--cream) 70%);
+}
+.preset-card.active::after {
+  content: '';
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--rose);
+  box-shadow: 0 0 6px var(--rose);
+}
+.preset-emoji { font-size: 1.2rem; line-height: 1; margin-bottom: 4px; display: block; }
+.preset-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.82rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink2);
+  display: block;
+}
+.preset-desc {
+  font-size: 0.44rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 2px;
+  display: block;
+}
+
+/* Filter sliders */
+.filter-list { display: flex; flex-direction: column; gap: 10px; }
+
+.filter-row {
+  display: flex; flex-direction: column; gap: 4px;
+}
+
+.filter-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+.filter-name {
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--ink2);
+}
+.filter-val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--rose);
+}
+
+.filter-track {
+  height: 2px;
+  background: var(--border);
+  position: relative;
+  border-radius: 1px;
+}
+.filter-fill {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--rose), var(--gold));
+  border-radius: 1px;
+  transition: width 0.1s ease;
+}
+
+input[type=range] {
+  position: absolute;
+  inset: -6px 0;
+  -webkit-appearance: none;
+  background: transparent;
+  width: 100%;
+  cursor: pointer;
+  margin: 0;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  background: var(--cream);
+  border: 1.5px solid var(--rose);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(200,146,122,0.3);
+  transition: transform 0.15s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+/* Color pickers for blush/lip tints */
+.tint-row {
+  display: flex; gap: 5px; flex-wrap: wrap;
+}
+.tint-dot {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.tint-dot:hover { transform: scale(1.15); }
+.tint-dot.active { border-color: var(--ink); transform: scale(1.1); }
+
+/* ── CENTER: CANVAS MIRROR ────────────────────── */
+.mirror-section {
+  position: relative;
+  background: #1a1410;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Decorative oval mirror frame */
+.mirror-frame {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+.mirror-frame::before {
+  content: '';
+  position: absolute; inset: 10px;
+  border: 1px solid rgba(196,168,130,0.1);
+}
+.mirror-frame-inner {
+  position: absolute; inset: 18px;
+  border: 1px solid rgba(196,168,130,0.06);
+}
+
+/* Corner ornaments */
+.corner-orn {
+  position: absolute;
+  width: 40px; height: 40px;
+  z-index: 5;
+  pointer-events: none;
+}
+.corner-orn::before, .corner-orn::after {
+  content: '';
+  position: absolute;
+  background: var(--gold);
+  opacity: 0.25;
+}
+.corner-orn.tl { top: 18px; left: 18px; }
+.corner-orn.tl::before { top:0;left:0;width:16px;height:1px; }
+.corner-orn.tl::after  { top:0;left:0;width:1px;height:16px; }
+.corner-orn.tr { top: 18px; right: 18px; }
+.corner-orn.tr::before { top:0;right:0;width:16px;height:1px; }
+.corner-orn.tr::after  { top:0;right:0;width:1px;height:16px; }
+.corner-orn.bl { bottom: 18px; left: 18px; }
+.corner-orn.bl::before { bottom:0;left:0;width:16px;height:1px; }
+.corner-orn.bl::after  { bottom:0;left:0;width:1px;height:16px; }
+.corner-orn.br { bottom: 18px; right: 18px; }
+.corner-orn.br::before { bottom:0;right:0;width:16px;height:1px; }
+.corner-orn.br::after  { bottom:0;right:0;width:1px;height:16px; }
+
+video { display: none; }
+
+canvas#cam-out {
+  max-width: 100%; max-height: 100%;
+  display: block;
+  transform: scaleX(-1);
+}
+
+/* No face overlay */
+.no-face-msg {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+.no-face-msg.show { opacity: 1; }
+.nf-icon { font-size: 2.5rem; display: block; margin-bottom: 12px; opacity: 0.3; }
+.nf-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-style: italic;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  color: rgba(196,168,130,0.3);
+}
+
+/* Mirror vignette */
+.mirror-vignette {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 85% at 50% 50%, transparent 60%, rgba(15,10,5,0.7) 100%);
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Before/After toggle */
+.ba-label {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 7;
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(15,10,5,0.7);
+  border: 1px solid rgba(196,168,130,0.2);
+  padding: 5px 14px;
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.ba-text {
+  font-size: 0.44rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(196,168,130,0.5);
+}
+.ba-mode {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--rose2);
+}
+
+/* Loading overlay */
+#loading {
+  position: absolute; inset: 0;
+  background: #1a1410;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1.4rem; z-index: 30;
+  transition: opacity 0.8s;
+}
+#loading.gone { opacity: 0; pointer-events: none; }
+
+.load-brand {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3rem;
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: 0.4em;
+  color: var(--gold2);
+  opacity: 0;
+  animation: fadein 0.8s 0.3s ease forwards;
+}
+@keyframes fadein { to { opacity:1; } }
+.load-brand-sub {
+  font-size: 0.42rem;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: rgba(196,168,130,0.3);
+  margin-top: -10px;
+}
+.load-msg {
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(196,168,130,0.25);
+}
+.load-bar {
+  width: 180px; height: 1px;
+  background: rgba(196,168,130,0.1);
+  overflow: hidden;
+}
+.load-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--rose), var(--gold));
+  width: 0%;
+  animation: lf 2.5s ease forwards;
+}
+@keyframes lf { to { width: 100%; } }
+
+/* ── RIGHT PANEL ──────────────────────────────── */
+.right-panel {
+  background: var(--cream2);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+.right-panel::-webkit-scrollbar { width: 3px; }
+.right-panel::-webkit-scrollbar-thumb { background: var(--border2); }
+
+.rsec {
+  padding: 1.1rem 1.3rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.rsec-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  color: var(--ink2);
+  margin-bottom: 0.85rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.rsec-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border2), transparent);
+}
+
+/* Face analysis stats */
+.analysis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.analysis-card {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+}
+.ac-label {
+  font-size: 0.42rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ac-val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-style: italic;
+  color: var(--rose);
+  margin-top: 2px;
+  transition: color 0.3s;
+}
+
+/* Before/after toggle button */
+.ba-toggle {
+  width: 100%;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-style: italic;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--border2);
+  background: var(--cream);
+  color: var(--ink2);
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 400;
+}
+.ba-toggle:hover { background: var(--rose3); border-color: var(--rose); }
+.ba-toggle.comparing {
+  background: var(--ink);
+  color: var(--gold2);
+  border-color: var(--ink);
+}
+
+/* Export/action buttons */
+.action-stack { display: flex; flex-direction: column; gap: 6px; }
+.act-btn {
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.48rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 400;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted);
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.act-btn:hover { border-color: var(--rose); color: var(--rose); background: var(--rose3); }
+.act-btn.primary {
+  background: var(--rose);
+  border-color: var(--rose);
+  color: white;
+  box-shadow: 0 3px 14px rgba(200,146,122,0.35);
+}
+.act-btn.primary:hover { background: #b8826a; }
+
+/* ── FOOTER ───────────────────────────────────── */
+footer {
+  position: relative; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1.6rem;
+  background: var(--ink);
+  border-top: 1px solid rgba(196,168,130,0.15);
+  font-size: 0.44rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(196,168,130,0.25);
+}
+
+.footer-center {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.6rem;
+  font-style: italic;
+  color: rgba(196,168,130,0.2);
+  letter-spacing: 0.2em;
+}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="load-brand">Lumière</div>
+  <div class="load-brand-sub">Live Beauty Studio</div>
+  <div class="load-msg" id="load-msg">Preparing AI face detection…</div>
+  <div class="load-bar"><div class="load-fill"></div></div>
+</div>
+
+<header>
+  <div class="brand">
+    <div class="brand-name">Lumière</div>
+    <div class="brand-sub">Live Beauty Studio · face-api.js</div>
+  </div>
+  <div class="header-center">68-Point Landmark Beauty Filters</div>
+  <div class="header-right">
+    <div class="status-gem" id="status-gem"><div class="pip"></div><span id="status-txt">Loading</span></div>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- LEFT: Filter controls -->
+  <div class="left-panel">
+
+    <!-- Presets -->
+    <div class="lsec">
+      <div class="lsec-title">Presets</div>
+      <div class="preset-grid" id="preset-grid">
+        <div class="preset-card active" data-preset="natural">
+          <span class="preset-emoji">🌸</span>
+          <span class="preset-name">Natural Glow</span>
+          <span class="preset-desc">Subtle radiance</span>
+        </div>
+        <div class="preset-card" data-preset="glamour">
+          <span class="preset-emoji">✨</span>
+          <span class="preset-name">Glamour</span>
+          <span class="preset-desc">Full beauty</span>
+        </div>
+        <div class="preset-card" data-preset="portrait">
+          <span class="preset-emoji">📷</span>
+          <span class="preset-name">Portrait</span>
+          <span class="preset-desc">Studio-ready</span>
+        </div>
+        <div class="preset-card" data-preset="rejuvenate">
+          <span class="preset-emoji">💫</span>
+          <span class="preset-name">Rejuvenate</span>
+          <span class="preset-desc">Youth & lift</span>
+        </div>
+        <div class="preset-card" data-preset="drama">
+          <span class="preset-emoji">🎭</span>
+          <span class="preset-name">Drama</span>
+          <span class="preset-desc">Bold & contour</span>
+        </div>
+        <div class="preset-card" data-preset="age">
+          <span class="preset-emoji">🕰</span>
+          <span class="preset-name">Age</span>
+          <span class="preset-desc">Time's wisdom</span>
+        </div>
+        <div class="preset-card" data-preset="ethereal">
+          <span class="preset-emoji">🌙</span>
+          <span class="preset-name">Ethereal</span>
+          <span class="preset-desc">Soft & dreamy</span>
+        </div>
+        <div class="preset-card" data-preset="none">
+          <span class="preset-emoji">○</span>
+          <span class="preset-name">Original</span>
+          <span class="preset-desc">No filter</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skin filters -->
+    <div class="lsec">
+      <div class="lsec-title">Skin</div>
+      <div class="filter-list" id="filters-skin">
+        <!-- injected -->
+      </div>
+    </div>
+
+    <!-- Eye filters -->
+    <div class="lsec">
+      <div class="lsec-title">Eyes</div>
+      <div class="filter-list" id="filters-eyes">
+        <!-- injected -->
+      </div>
+    </div>
+
+    <!-- Color -->
+    <div class="lsec">
+      <div class="lsec-title">Colour</div>
+      <div class="filter-list" id="filters-color">
+        <!-- injected -->
+      </div>
+    </div>
+
+    <!-- Blush tints -->
+    <div class="lsec">
+      <div class="lsec-title">Blush Tone</div>
+      <div class="tint-row" id="blush-tints">
+        <div class="tint-dot active" data-tint="rose" style="background:#e8a0a0" title="Rose"></div>
+        <div class="tint-dot" data-tint="peach" style="background:#f0b888" title="Peach"></div>
+        <div class="tint-dot" data-tint="berry" style="background:#c070a0" title="Berry"></div>
+        <div class="tint-dot" data-tint="coral" style="background:#f07060" title="Coral"></div>
+        <div class="tint-dot" data-tint="bronze" style="background:#c89060" title="Bronze"></div>
+        <div class="tint-dot" data-tint="nude" style="background:#e8c8a8" title="Nude"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CENTER: Live mirror -->
+  <div class="mirror-section" id="mirror-section">
+    <video id="video" autoplay muted playsinline></video>
+    <canvas id="cam-out"></canvas>
+
+    <div class="mirror-vignette"></div>
+    <div class="mirror-frame"><div class="mirror-frame-inner"></div></div>
+    <div class="corner-orn tl"></div>
+    <div class="corner-orn tr"></div>
+    <div class="corner-orn bl"></div>
+    <div class="corner-orn br"></div>
+
+    <div class="ba-label">
+      <span class="ba-text" id="ba-text">Viewing</span>
+      <span class="ba-mode" id="ba-mode">Enhanced</span>
+    </div>
+
+    <div class="no-face-msg" id="no-face-msg" >
+      <span class="nf-icon">✦</span>
+      <span class="nf-text">Step into the light</span>
+    </div>
+
+    <div id="loading">
+      <div class="load-brand">Lumière</div>
+      <div class="load-brand-sub">Live Beauty Studio</div>
+      <div class="load-msg" id="load-msg-2">Calibrating…</div>
+      <div class="load-bar"><div class="load-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Info & actions -->
+  <div class="right-panel">
+
+    <!-- Before/after -->
+    <div class="rsec">
+      <div class="rsec-title">Compare</div>
+      <button class="ba-toggle" id="ba-toggle">Hold to see Original</button>
+    </div>
+
+    <!-- Face analysis -->
+    <div class="rsec">
+      <div class="rsec-title">Analysis</div>
+      <div class="analysis-grid">
+        <div class="analysis-card"><div class="ac-label">Confidence</div><div class="ac-val" id="ac-conf">—</div></div>
+        <div class="analysis-card"><div class="ac-label">Face Width</div><div class="ac-val" id="ac-fw">—</div></div>
+        <div class="analysis-card"><div class="ac-label">Eye Area</div><div class="ac-val" id="ac-ew">—</div></div>
+        <div class="analysis-card"><div class="ac-label">Lip Width</div><div class="ac-val" id="ac-lw">—</div></div>
+        <div class="analysis-card"><div class="ac-label">Cheek L</div><div class="ac-val" id="ac-cl">—</div></div>
+        <div class="analysis-card"><div class="ac-label">Cheek R</div><div class="ac-val" id="ac-cr">—</div></div>
+        <div class="analysis-card"><div class="ac-label">FPS</div><div class="ac-val" id="ac-fps">—</div></div>
+        <div class="analysis-card"><div class="ac-label">Mode</div><div class="ac-val" id="ac-mode">Natural</div></div>
+      </div>
+    </div>
+
+    <!-- Active filters list -->
+    <div class="rsec">
+      <div class="rsec-title">Active Filters</div>
+      <div id="active-filter-list" style="display:flex;flex-direction:column;gap:5px"></div>
+    </div>
+
+    <!-- Export -->
+    <div class="rsec">
+      <div class="rsec-title">Export</div>
+      <div class="action-stack">
+        <button class="act-btn primary" id="btn-capture">✦ Capture Look</button>
+        <button class="act-btn" id="btn-save">↓ Save as PNG</button>
+        <button class="act-btn" id="btn-compare">⇄ Side-by-Side</button>
+      </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="rsec" style="flex:1">
+      <div class="rsec-title">Atelier</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.82rem;line-height:1.8;color:var(--muted)">
+        Each filter is applied precisely to face regions using 68 landmark points. Skin smoothing, cheek blush, eye brightening, and contour are blended in real-time at pixel level.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <span id="f-fps">— FPS</span>
+  <span class="footer-center">Lumière · Live Beauty Studio</span>
+  <span id="f-preset">Natural Glow</span>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════════
+// FILTER DEFINITIONS
+// ══════════════════════════════════════════════════════
+const SKIN_FILTERS = [
+  { id:'smoothing',   name:'Skin Smoothing',   min:0, max:100, val:45, unit:'%' },
+  { id:'brightness',  name:'Luminosity',        min:-50, max:80, val:15, unit:'' },
+  { id:'warmth',      name:'Warmth',            min:-30, max:60, val:8,  unit:'' },
+  { id:'texture',     name:'Skin Texture',      min:0, max:100, val:0,  unit:'%' },
+];
+
+const EYE_FILTERS = [
+  { id:'eye-bright',  name:'Eye Brightening',  min:0, max:100, val:30, unit:'%' },
+  { id:'eye-whites',  name:'Eye Whites',        min:0, max:80, val:20, unit:'%' },
+  { id:'under-eye',   name:'Under-Eye Lift',   min:0, max:100, val:25, unit:'%' },
+  { id:'lashes',      name:'Lash Definition',  min:0, max:100, val:0,  unit:'%' },
+];
+
+const COLOR_FILTERS = [
+  { id:'blush',       name:'Blush Intensity',  min:0, max:100, val:30, unit:'%' },
+  { id:'lips',        name:'Lip Colour',        min:0, max:100, val:0,  unit:'%' },
+  { id:'contour',     name:'Contouring',        min:0, max:100, val:0,  unit:'%' },
+  { id:'highlight',   name:'Highlighter',      min:0, max:100, val:15, unit:'%' },
+];
+
+const ALL_FILTERS = [...SKIN_FILTERS, ...EYE_FILTERS, ...COLOR_FILTERS];
+
+// ══════════════════════════════════════════════════════
+// PRESETS
+// ══════════════════════════════════════════════════════
+const PRESETS = {
+  natural:   { smoothing:45, brightness:15, warmth:8, texture:0, 'eye-bright':30, 'eye-whites':20, 'under-eye':25, lashes:0, blush:30, lips:0, contour:0, highlight:15 },
+  glamour:   { smoothing:80, brightness:30, warmth:15, texture:0, 'eye-bright':60, 'eye-whites':50, 'under-eye':50, lashes:70, blush:70, lips:60, contour:50, highlight:60 },
+  portrait:  { smoothing:65, brightness:20, warmth:5, texture:0, 'eye-bright':40, 'eye-whites':35, 'under-eye':40, lashes:30, blush:25, lips:15, contour:20, highlight:30 },
+  rejuvenate:{ smoothing:90, brightness:40, warmth:20, texture:0, 'eye-bright':70, 'eye-whites':60, 'under-eye':80, lashes:40, blush:50, lips:30, contour:15, highlight:50 },
+  drama:     { smoothing:55, brightness:5, warmth:-5, texture:0, 'eye-bright':50, 'eye-whites':30, 'under-eye':30, lashes:90, blush:60, lips:80, contour:85, highlight:70 },
+  age:       { smoothing:0, brightness:-15, warmth:-5, texture:80, 'eye-bright':0, 'eye-whites':0, 'under-eye':0, lashes:0, blush:0, lips:0, contour:40, highlight:0 },
+  ethereal:  { smoothing:75, brightness:35, warmth:0, texture:0, 'eye-bright':50, 'eye-whites':40, 'under-eye':60, lashes:20, blush:40, lips:10, contour:0, highlight:80 },
+  none:      { smoothing:0, brightness:0, warmth:0, texture:0, 'eye-bright':0, 'eye-whites':0, 'under-eye':0, lashes:0, blush:0, lips:0, contour:0, highlight:0 },
+};
+
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+const cfg = {
+  filters: {},
+  preset: 'natural',
+  blushTint: 'rose',
+  comparing: false,
+};
+
+const BLUSH_TINTS = {
+  rose:   [232,160,160],
+  peach:  [240,184,136],
+  berry:  [192,112,160],
+  coral:  [240,112,96],
+  bronze: [200,144,96],
+  nude:   [232,200,168],
+};
+
+// Init filter values from preset
+ALL_FILTERS.forEach(f => { cfg.filters[f.id] = PRESETS.natural[f.id] ?? f.val; });
+
+const perf = { fps:0, frames:0, last:performance.now() };
+let lastDet = null;
+let detFrame = 0;
+let capturedFrame = null;
+let firstResult = true;
+
+// ══════════════════════════════════════════════════════
+// BUILD FILTER UI
+// ══════════════════════════════════════════════════════
+function buildFilters(filters, containerId) {
+  const el = document.getElementById(containerId);
+  filters.forEach(f => {
+    const range = f.max - f.min;
+    const pct = ((f.val - f.min) / range) * 100;
+    el.innerHTML += `
+      <div class="filter-row">
+        <div class="filter-header">
+          <span class="filter-name">${f.name}</span>
+          <span class="filter-val" id="fv-${f.id}">${f.val}${f.unit}</span>
+        </div>
+        <div class="filter-track">
+          <div class="filter-fill" id="ff-${f.id}" style="width:${pct}%"></div>
+          <input type="range" id="fr-${f.id}" min="${f.min}" max="${f.max}" value="${f.val}" data-fid="${f.id}">
+        </div>
+      </div>`;
+  });
+
+  el.addEventListener('input', e => {
+    const inp = e.target;
+    if (!inp.dataset.fid) return;
+    const id = inp.dataset.fid;
+    const val = +inp.value;
+    const fDef = ALL_FILTERS.find(f => f.id === id);
+    cfg.filters[id] = val;
+    document.getElementById(`fv-${id}`).textContent = `${val}${fDef?.unit || ''}`;
+    const pct = ((val - (fDef?.min||0)) / ((fDef?.max||100)-(fDef?.min||0))) * 100;
+    document.getElementById(`ff-${id}`).style.width = `${pct}%`;
+    updateActiveFilterList();
+  });
+}
+
+buildFilters(SKIN_FILTERS, 'filters-skin');
+buildFilters(EYE_FILTERS, 'filters-eyes');
+buildFilters(COLOR_FILTERS, 'filters-color');
+
+// ══════════════════════════════════════════════════════
+// PRESETS UI
+// ══════════════════════════════════════════════════════
+document.getElementById('preset-grid').addEventListener('click', e => {
+  const card = e.target.closest('.preset-card');
+  if (!card) return;
+  const preset = card.dataset.preset;
+  document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+  card.classList.add('active');
+  cfg.preset = preset;
+  applyPreset(preset);
+});
+
+function applyPreset(name) {
+  const values = PRESETS[name];
+  ALL_FILTERS.forEach(f => {
+    const val = values[f.id] ?? f.val;
+    cfg.filters[f.id] = val;
+    const inp = document.getElementById(`fr-${f.id}`);
+    const valEl = document.getElementById(`fv-${f.id}`);
+    const fillEl = document.getElementById(`ff-${f.id}`);
+    if (inp) inp.value = val;
+    if (valEl) valEl.textContent = `${val}${f.unit}`;
+    if (fillEl) {
+      const pct = ((val - f.min) / (f.max - f.min)) * 100;
+      fillEl.style.width = `${pct}%`;
+    }
+  });
+  document.getElementById('f-preset').textContent = card_name(name);
+  document.getElementById('ac-mode').textContent = card_name(name);
+  updateActiveFilterList();
+}
+
+function card_name(p) {
+  const names = { natural:'Natural Glow', glamour:'Glamour', portrait:'Portrait', rejuvenate:'Rejuvenate', drama:'Drama', age:'Age', ethereal:'Ethereal', none:'Original' };
+  return names[p] || p;
+}
+
+function updateActiveFilterList() {
+  const list = document.getElementById('active-filter-list');
+  const active = ALL_FILTERS.filter(f => Math.abs(cfg.filters[f.id]) > 5);
+  list.innerHTML = active.map(f => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:var(--cream);border:1px solid var(--border);font-size:0.48rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)">
+      <span>${f.name}</span>
+      <span style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--rose);font-size:0.7rem">${cfg.filters[f.id]}${f.unit}</span>
+    </div>`).join('');
+  if (active.length === 0) list.innerHTML = `<div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.75rem;color:var(--muted);text-align:center;padding:8px">No active filters</div>`;
+}
+
+// Blush tints
+document.getElementById('blush-tints').addEventListener('click', e => {
+  const dot = e.target.closest('.tint-dot');
+  if (!dot) return;
+  document.querySelectorAll('.tint-dot').forEach(d => d.classList.remove('active'));
+  dot.classList.add('active');
+  cfg.blushTint = dot.dataset.tint;
+});
+
+// ══════════════════════════════════════════════════════
+// CANVAS SETUP
+// ══════════════════════════════════════════════════════
+const video  = document.getElementById('video');
+const camOut = document.getElementById('cam-out');
+const outCtx = camOut.getContext('2d');
+
+// Off-screen scratch canvas
+const scratch = document.createElement('canvas');
+const sCtx    = scratch.getContext('2d', { willReadFrequently: true });
+
+// ══════════════════════════════════════════════════════
+// BEAUTY FILTER ENGINE
+// ══════════════════════════════════════════════════════
+
+// Apply Gaussian blur to a specific region
+function blurRegion(imageData, W, H, cx, cy, radius, strength) {
+  if (strength <= 0) return;
+  const passes = Math.floor(strength / 20) + 1;
+  const kernelR = Math.max(1, Math.floor(strength / 15));
+  const data = imageData.data;
+
+  // Simple box blur approximation (multi-pass)
+  for (let pass = 0; pass < passes; pass++) {
+    for (let y = Math.max(0, Math.floor(cy - radius)); y < Math.min(H, Math.ceil(cy + radius)); y++) {
+      for (let x = Math.max(0, Math.floor(cx - radius)); x < Math.min(W, Math.ceil(cx + radius)); x++) {
+        const dist = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
+        if (dist > radius) continue;
+        const falloff = 1 - (dist/radius);
+        const weight = falloff * falloff * (3 - 2*falloff); // smoothstep
+
+        // Box blur this pixel
+        let r=0, g=0, b=0, cnt=0;
+        for (let ky=-kernelR; ky<=kernelR; ky++) {
+          for (let kx=-kernelR; kx<=kernelR; kx++) {
+            const nx = x+kx, ny = y+ky;
+            if (nx<0||nx>=W||ny<0||ny>=H) continue;
+            const ni = (ny*W+nx)*4;
+            r+=data[ni]; g+=data[ni+1]; b+=data[ni+2]; cnt++;
+          }
+        }
+        if (cnt===0) continue;
+        const i = (y*W+x)*4;
+        const blendAmt = weight * strength/100;
+        data[i]   = data[i]   * (1-blendAmt) + (r/cnt) * blendAmt;
+        data[i+1] = data[i+1] * (1-blendAmt) + (g/cnt) * blendAmt;
+        data[i+2] = data[i+2] * (1-blendAmt) + (b/cnt) * blendAmt;
+      }
+    }
+  }
+}
+
+// Apply brightness/color adjustment to a region
+function adjustRegion(imageData, W, H, cx, cy, radius, rAdj, gAdj, bAdj, strength) {
+  if (strength === 0) return;
+  const data = imageData.data;
+  for (let y=Math.max(0,Math.floor(cy-radius));y<Math.min(H,Math.ceil(cy+radius));y++) {
+    for (let x=Math.max(0,Math.floor(cx-radius));x<Math.min(W,Math.ceil(cx+radius));x++) {
+      const dist = Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy));
+      if (dist>radius) continue;
+      const falloff = 1 - (dist/radius);
+      const w = falloff*falloff*(3-2*falloff) * strength/100;
+      const i = (y*W+x)*4;
+      data[i]   = Math.max(0, Math.min(255, data[i]   + rAdj*w));
+      data[i+1] = Math.max(0, Math.min(255, data[i+1] + gAdj*w));
+      data[i+2] = Math.max(0, Math.min(255, data[i+2] + bAdj*w));
+    }
+  }
+}
+
+// Paint color tint over region (blush, lips, etc.)
+function tintRegion(imageData, W, H, cx, cy, radius, tr, tg, tb, alpha) {
+  if (alpha <= 0) return;
+  const data = imageData.data;
+  for (let y=Math.max(0,Math.floor(cy-radius));y<Math.min(H,Math.ceil(cy+radius));y++) {
+    for (let x=Math.max(0,Math.floor(cx-radius));x<Math.min(W,Math.ceil(cx+radius));x++) {
+      const dist = Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy));
+      if (dist>radius) continue;
+      const falloff = 1-(dist/radius);
+      const w = falloff*falloff*(3-2*falloff)*alpha;
+      const i = (y*W+x)*4;
+      data[i]   = data[i]   *(1-w) + tr*w;
+      data[i+1] = data[i+1] *(1-w) + tg*w;
+      data[i+2] = data[i+2] *(1-w) + tb*w;
+    }
+  }
+}
+
+// Darken region (contour)
+function darkenRegion(imageData, W, H, cx, cy, rx, ry, strength) {
+  if (strength<=0) return;
+  const data = imageData.data;
+  for (let y=Math.max(0,Math.floor(cy-ry));y<Math.min(H,Math.ceil(cy+ry));y++) {
+    for (let x=Math.max(0,Math.floor(cx-rx));x<Math.min(W,Math.ceil(cx+rx));x++) {
+      const dx=(x-cx)/rx, dy=(y-cy)/ry;
+      if (dx*dx+dy*dy>1) continue;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      const falloff=1-dist;
+      const w=falloff*falloff*(3-2*falloff)*strength/100;
+      const i=(y*W+x)*4;
+      data[i]   = data[i]   *(1-w*0.4);
+      data[i+1] = data[i+1] *(1-w*0.4);
+      data[i+2] = data[i+2] *(1-w*0.45);
+    }
+  }
+}
+
+// Add noise/texture (aging effect)
+function addTexture(imageData, W, H, cx, cy, radius, strength) {
+  if (strength<=0) return;
+  const data=imageData.data;
+  for (let y=Math.max(0,Math.floor(cy-radius));y<Math.min(H,Math.ceil(cy+radius));y++) {
+    for (let x=Math.max(0,Math.floor(cx-radius));x<Math.min(W,Math.ceil(cx+radius));x++) {
+      const dist=Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy));
+      if (dist>radius) continue;
+      const falloff=1-(dist/radius);
+      const w=falloff*falloff*(3-2*falloff)*strength/100;
+      const noise=(Math.random()-0.5)*20*w;
+      const i=(y*W+x)*4;
+      data[i]   = Math.max(0,Math.min(255,data[i]  +noise));
+      data[i+1] = Math.max(0,Math.min(255,data[i+1]+noise*0.9));
+      data[i+2] = Math.max(0,Math.min(255,data[i+2]+noise*0.8));
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// APPLY ALL BEAUTY FILTERS USING LANDMARKS
+// ══════════════════════════════════════════════════════
+function applyBeautyFilters(imageData, lm, W, H) {
+  const f = cfg.filters;
+
+  // Helper: average positions
+  function avg(idxs) {
+    const x=idxs.reduce((s,i)=>s+lm[i].x,0)/idxs.length;
+    const y=idxs.reduce((s,i)=>s+lm[i].y,0)/idxs.length;
+    return {x,y};
+  }
+  function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
+
+  // Key face regions
+  const faceCenter = avg([...Array.from({length:17},(_,i)=>i)]);
+  const leftEye    = avg([36,37,38,39,40,41]);
+  const rightEye   = avg([42,43,44,45,46,47]);
+  const nose       = lm[30];
+  const mouth      = avg([48,49,50,51,52,53,54,55,56,57,58,59]);
+  const leftCheek  = lm[2];
+  const rightCheek = lm[14];
+  const jaw        = avg([5,6,7,8,9,10,11]);
+  const forehead   = { x:faceCenter.x, y:Math.min(lm[17].y,lm[26].y)-dist(lm[17],lm[26])*0.4 };
+  const underEyeL  = { x:leftEye.x,  y:leftEye.y  + dist(lm[36],lm[39])*0.4 };
+  const underEyeR  = { x:rightEye.x, y:rightEye.y + dist(lm[42],lm[45])*0.4 };
+  const cheekBoneL = { x:(leftCheek.x*0.4 + leftEye.x*0.6), y:(leftCheek.y*0.5+leftEye.y*0.5)+10 };
+  const cheekBoneR = { x:(rightCheek.x*0.4+rightEye.x*0.6), y:(rightCheek.y*0.5+rightEye.y*0.5)+10 };
+  const faceW      = dist(lm[0],lm[16]);
+  const eyeW       = dist(lm[36],lm[39]);
+
+  // 1. ── SKIN SMOOTHING (forehead + cheeks + chin) ────────────────
+  const smooth = f['smoothing'];
+  if (smooth > 0) {
+    blurRegion(imageData, W, H, forehead.x, forehead.y, faceW*0.32, smooth);
+    blurRegion(imageData, W, H, leftCheek.x,  leftCheek.y,  faceW*0.22, smooth);
+    blurRegion(imageData, W, H, rightCheek.x, rightCheek.y, faceW*0.22, smooth);
+    blurRegion(imageData, W, H, jaw.x, jaw.y, faceW*0.25, smooth*0.7);
+    blurRegion(imageData, W, H, nose.x, nose.y, faceW*0.14, smooth*0.5);
+  }
+
+  // 2. ── OVERALL BRIGHTNESS / WARMTH ──────────────────────────────
+  const bright = f['brightness'];
+  const warm   = f['warmth'];
+  if (bright !== 0 || warm !== 0) {
+    // Apply to full face
+    const faceRegions = [
+      [forehead.x, forehead.y, faceW*0.42],
+      [faceCenter.x, faceCenter.y, faceW*0.50],
+      [jaw.x, jaw.y, faceW*0.38],
+    ];
+    faceRegions.forEach(([cx,cy,r]) => {
+      adjustRegion(imageData, W, H, cx, cy, r, bright+warm, bright+warm*0.5, bright-warm*0.3, 80);
+    });
+  }
+
+  // 3. ── TEXTURE (aging) ───────────────────────────────────────────
+  const tex = f['texture'];
+  if (tex > 0) {
+    addTexture(imageData, W, H, forehead.x, forehead.y, faceW*0.35, tex);
+    addTexture(imageData, W, H, leftCheek.x, leftCheek.y, faceW*0.2, tex*0.7);
+    addTexture(imageData, W, H, rightCheek.x,rightCheek.y,faceW*0.2, tex*0.7);
+    // Darken under-eye for aging
+    darkenRegion(imageData,W,H, underEyeL.x,underEyeL.y, eyeW*0.4,eyeW*0.2, tex*0.4);
+    darkenRegion(imageData,W,H, underEyeR.x,underEyeR.y, eyeW*0.4,eyeW*0.2, tex*0.4);
+  }
+
+  // 4. ── EYE BRIGHTENING ───────────────────────────────────────────
+  const eyeBright = f['eye-bright'];
+  if (eyeBright > 0) {
+    const bAmt = eyeBright * 0.6;
+    adjustRegion(imageData,W,H, leftEye.x,  leftEye.y,  eyeW*0.8, bAmt,bAmt,bAmt*1.1, eyeBright);
+    adjustRegion(imageData,W,H, rightEye.x, rightEye.y, eyeW*0.8, bAmt,bAmt,bAmt*1.1, eyeBright);
+  }
+
+  // 5. ── EYE WHITES ────────────────────────────────────────────────
+  const eyeWhites = f['eye-whites'];
+  if (eyeWhites > 0) {
+    // Brighten with slight blue for "whiter" look
+    const wL = avg([37,38,40,41]); // top/bottom of left eye
+    const wR = avg([43,44,46,47]);
+    adjustRegion(imageData,W,H, wL.x,wL.y, eyeW*0.45, eyeWhites*0.5,eyeWhites*0.5,eyeWhites*0.7, eyeWhites);
+    adjustRegion(imageData,W,H, wR.x,wR.y, eyeW*0.45, eyeWhites*0.5,eyeWhites*0.5,eyeWhites*0.7, eyeWhites);
+  }
+
+  // 6. ── UNDER-EYE LIFT (brighten dark circles) ───────────────────
+  const underEye = f['under-eye'];
+  if (underEye > 0) {
+    const lift = underEye * 0.45;
+    adjustRegion(imageData,W,H, underEyeL.x,underEyeL.y, eyeW*0.6, lift,lift*0.9,lift*0.8, underEye);
+    adjustRegion(imageData,W,H, underEyeR.x,underEyeR.y, eyeW*0.6, lift,lift*0.9,lift*0.8, underEye);
+  }
+
+  // 7. ── LASH DEFINITION (darken lid area) ────────────────────────
+  const lashes = f['lashes'];
+  if (lashes > 0) {
+    const lidL = avg([37,38]); // top lid left
+    const lidR = avg([43,44]); // top lid right
+    adjustRegion(imageData,W,H, lidL.x,lidL.y, eyeW*0.5, -lashes*0.5,-lashes*0.45,-lashes*0.4, lashes);
+    adjustRegion(imageData,W,H, lidR.x,lidR.y, eyeW*0.5, -lashes*0.5,-lashes*0.45,-lashes*0.4, lashes);
+  }
+
+  // 8. ── BLUSH ─────────────────────────────────────────────────────
+  const blush = f['blush'];
+  if (blush > 0) {
+    const [tr,tg,tb] = BLUSH_TINTS[cfg.blushTint] || [232,160,160];
+    const blushAlpha = blush/100 * 0.35;
+    tintRegion(imageData,W,H, cheekBoneL.x,cheekBoneL.y, faceW*0.2, tr,tg,tb, blushAlpha);
+    tintRegion(imageData,W,H, cheekBoneR.x,cheekBoneR.y, faceW*0.2, tr,tg,tb, blushAlpha);
+  }
+
+  // 9. ── LIP COLOUR ────────────────────────────────────────────────
+  const lips = f['lips'];
+  if (lips > 0) {
+    const [lr,lg,lb] = [200,60,70]; // deep rose
+    const lipAlpha = lips/100 * 0.5;
+    tintRegion(imageData,W,H, mouth.x,mouth.y, faceW*0.18, lr,lg,lb, lipAlpha);
+  }
+
+  // 10. ── CONTOUR (jaw + temples + nose sides) ─────────────────────
+  const contour = f['contour'];
+  if (contour > 0) {
+    // Jaw sides
+    darkenRegion(imageData,W,H, lm[3].x,lm[3].y, faceW*0.08,faceW*0.14, contour);
+    darkenRegion(imageData,W,H, lm[13].x,lm[13].y,faceW*0.08,faceW*0.14, contour);
+    // Temple areas
+    darkenRegion(imageData,W,H, lm[0].x,lm[0].y, faceW*0.1,faceW*0.18, contour*0.6);
+    darkenRegion(imageData,W,H, lm[16].x,lm[16].y,faceW*0.1,faceW*0.18, contour*0.6);
+    // Nose sides
+    darkenRegion(imageData,W,H, lm[31].x,lm[31].y, faceW*0.04,faceW*0.1, contour*0.4);
+    darkenRegion(imageData,W,H, lm[35].x,lm[35].y, faceW*0.04,faceW*0.1, contour*0.4);
+  }
+
+  // 11. ── HIGHLIGHTER (forehead + cheekbones + nose bridge) ────────
+  const highlight = f['highlight'];
+  if (highlight > 0) {
+    const hAmt = highlight * 0.5;
+    const nBridge = avg([27,28,29]);
+    adjustRegion(imageData,W,H, nBridge.x,nBridge.y, faceW*0.06, hAmt,hAmt,hAmt*0.95, highlight);
+    adjustRegion(imageData,W,H, cheekBoneL.x,cheekBoneL.y-10, faceW*0.1, hAmt,hAmt*0.95,hAmt*0.85, highlight*0.8);
+    adjustRegion(imageData,W,H, cheekBoneR.x,cheekBoneR.y-10, faceW*0.1, hAmt,hAmt*0.95,hAmt*0.85, highlight*0.8);
+    adjustRegion(imageData,W,H, forehead.x,forehead.y, faceW*0.18, hAmt*0.7,hAmt*0.7,hAmt*0.6, highlight*0.6);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// MAIN RENDER LOOP
+// ══════════════════════════════════════════════════════
+async function renderLoop() {
+  requestAnimationFrame(renderLoop);
+
+  perf.frames++;
+  const now = performance.now();
+  if (now - perf.last >= 1000) {
+    perf.fps = perf.frames; perf.frames = 0; perf.last = now;
+    document.getElementById('ac-fps').textContent = perf.fps;
+    document.getElementById('f-fps').textContent  = `${perf.fps} FPS`;
+  }
+
+  if (video.readyState < 2) return;
+
+  const W = scratch.width, H = scratch.height;
+
+  // Draw raw frame
+  sCtx.save();
+  sCtx.translate(W, 0); sCtx.scale(-1, 1);
+  sCtx.drawImage(video, 0, 0, W, H);
+  sCtx.restore();
+
+  // Detect every 3 frames
+  detFrame++;
+  if (detFrame % 3 === 0) {
+    lastDet = await faceapi
+      .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.4 }))
+      .withFaceLandmarks(true);
+  }
+
+  if (!lastDet) {
+    // No face — just draw raw
+    outCtx.drawImage(scratch, 0, 0);
+    document.getElementById('no-face-msg').classList.add('show');
+    return;
+  }
+
+  document.getElementById('no-face-msg').classList.remove('show');
+
+  if (firstResult) {
+    firstResult = false;
+    document.getElementById('loading').classList.add('gone');
+    document.getElementById('status-gem').classList.add('live');
+    document.getElementById('status-txt').textContent = 'Live';
+  }
+
+  const lm = lastDet.landmarks.positions;
+  const box= lastDet.detection.box;
+  const conf=lastDet.detection.score;
+
+  // Mirror landmarks to match CSS-mirrored video
+  const mLm = lm.map(p => ({ x: W - p.x, y: p.y }));
+
+  // Update face stats
+  document.getElementById('ac-conf').textContent = `${Math.round(conf*100)}%`;
+  document.getElementById('ac-fw').textContent   = `${Math.round(box.width)}px`;
+  const eyeW2 = Math.abs(lm[39].x - lm[36].x);
+  const lipW2 = Math.abs(lm[54].x - lm[48].x);
+  document.getElementById('ac-ew').textContent   = `${Math.round(eyeW2)}px`;
+  document.getElementById('ac-lw').textContent   = `${Math.round(lipW2)}px`;
+  document.getElementById('ac-cl').textContent   = `${Math.round((lm[2].x/box.width)*100)}%`;
+  document.getElementById('ac-cr').textContent   = `${Math.round(((W-lm[14].x)/box.width)*100)}%`;
+
+  if (cfg.comparing) {
+    // Show original
+    outCtx.drawImage(scratch, 0, 0);
+  } else {
+    // Apply beauty filters
+    const imgData = sCtx.getImageData(0, 0, W, H);
+    applyBeautyFilters(imgData, mLm, W, H);
+    outCtx.putImageData(imgData, 0, 0);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// BEFORE/AFTER
+// ══════════════════════════════════════════════════════
+const baToggle = document.getElementById('ba-toggle');
+baToggle.addEventListener('mousedown',  () => { cfg.comparing=true; baToggle.classList.add('comparing'); baToggle.textContent='Viewing Original'; document.getElementById('ba-text').textContent='Viewing'; document.getElementById('ba-mode').textContent='Original'; });
+baToggle.addEventListener('mouseup',    () => { cfg.comparing=false; baToggle.classList.remove('comparing'); baToggle.textContent='Hold to see Original'; document.getElementById('ba-text').textContent='Viewing'; document.getElementById('ba-mode').textContent='Enhanced'; });
+baToggle.addEventListener('mouseleave', () => { cfg.comparing=false; baToggle.classList.remove('comparing'); baToggle.textContent='Hold to see Original'; document.getElementById('ba-text').textContent='Viewing'; document.getElementById('ba-mode').textContent='Enhanced'; });
+
+// ══════════════════════════════════════════════════════
+// EXPORT ACTIONS
+// ══════════════════════════════════════════════════════
+document.getElementById('btn-capture').addEventListener('click', () => {
+  const link = document.createElement('a');
+  link.download = `lumiere-capture-${Date.now()}.png`;
+  link.href = camOut.toDataURL('image/png');
+  link.click();
+});
+
+document.getElementById('btn-save').addEventListener('click', () => {
+  const link = document.createElement('a');
+  link.download = `lumiere-save-${Date.now()}.png`;
+  link.href = camOut.toDataURL('image/png');
+  link.click();
+});
+
+document.getElementById('btn-compare').addEventListener('click', () => {
+  const W = scratch.width, H = scratch.height;
+  const comp = document.createElement('canvas');
+  comp.width = W * 2;
+  comp.height = H;
+  const cCtx = comp.getContext('2d');
+  
+  // Left: Original
+  cCtx.drawImage(scratch, 0, 0, W, H);
+  
+  // Right: Enhanced
+  cCtx.drawImage(camOut, W, 0, W, H);
+  
+  const link = document.createElement('a');
+  link.download = `lumiere-compare-${Date.now()}.png`;
+  link.href = comp.toDataURL('image/png');
+  link.click();
+});
+
+// ══════════════════════════════════════════════════════
+// INIT CAMERA & MODELS
+// ══════════════════════════════════════════════════════
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    });
+    video.srcObject = stream;
+    return new Promise(resolve => {
+      video.onloadedmetadata = () => {
+        video.play();
+        const W = video.videoWidth;
+        const H = video.videoHeight;
+        scratch.width = W;
+        scratch.height = H;
+        camOut.width = W;
+        camOut.height = H;
+        resolve();
+      };
+    });
+  } catch (err) {
+    document.getElementById('status-txt').textContent = 'Cam Error';
+    document.getElementById('load-msg-2').textContent = 'Camera access denied';
+    console.error(err);
+  }
+}
+
+async function init() {
+  document.getElementById('status-txt').textContent = 'Loading AI...';
+  try {
+    // Load face-api.js models from a public raw github repository CDN
+    const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+    
+    document.getElementById('load-msg').textContent = 'Initializing Camera...';
+    await startCamera();
+    
+    // Initial delay for smooth transition
+    setTimeout(() => {
+      document.getElementById('loading').style.opacity = '0';
+      setTimeout(() => document.getElementById('loading').classList.add('gone'), 800);
+      requestAnimationFrame(renderLoop);
+    }, 500);
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById('load-msg').textContent = 'Error loading models';
+  }
+}
+
+// Start application
+init();
+</script>
+</body>
+</html>
